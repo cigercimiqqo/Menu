@@ -35,6 +35,7 @@ nav.addEventListener('click', event => {
   const link = event.target.closest('a');
   if (!link) return;
   event.preventDefault();
+  window.resetMenuZoom?.();
   document.getElementById(link.dataset.page)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
@@ -62,7 +63,10 @@ document.addEventListener('touchmove', event => {
 function initMenuPinchZoom() {
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 5;
+  const IDLE_RESET_MS = 2000;
+  const LEAVE_RATIO = 0.38;
   const zoomStates = new Map();
+  let idleResetTimer = null;
 
   const dist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
   const mid = touches => ({
@@ -76,6 +80,43 @@ function initMenuPinchZoom() {
     blockNavSync = pinching || anyZoomed();
   };
 
+  const clearIdleReset = () => {
+    if (!idleResetTimer) return;
+    clearTimeout(idleResetTimer);
+    idleResetTimer = null;
+  };
+
+  const scheduleIdleReset = () => {
+    clearIdleReset();
+    if (!anyZoomed()) return;
+    idleResetTimer = window.setTimeout(() => {
+      idleResetTimer = null;
+      if (pinching) {
+        scheduleIdleReset();
+        return;
+      }
+      resetAllZoom();
+    }, IDLE_RESET_MS);
+  };
+
+  const noteZoomActivity = () => {
+    if (anyZoomed()) scheduleIdleReset();
+    else clearIdleReset();
+  };
+
+  const unlockPageHeight = state => {
+    state.page.style.minHeight = '';
+    state.viewport.style.height = '';
+    state.baseHeight = null;
+  };
+
+  const lockPageHeight = state => {
+    if (state.baseHeight) return;
+    state.baseHeight = state.page.offsetHeight;
+    state.page.style.minHeight = `${state.baseHeight}px`;
+    state.viewport.style.height = `${state.baseHeight}px`;
+  };
+
   const resetPage = page => {
     const state = zoomStates.get(page);
     if (!state) return;
@@ -83,12 +124,23 @@ function initMenuPinchZoom() {
     state.pinchAnchor = null;
     state.img.style.width = '';
     state.img.style.maxWidth = '';
+    unlockPageHeight(state);
     page.classList.remove('is-zoomed');
     state.viewport.classList.remove('can-pan', 'is-pinching');
     state.viewport.scrollLeft = 0;
     state.viewport.scrollTop = 0;
     syncNavBlock();
+    if (!anyZoomed()) clearIdleReset();
   };
+
+  const resetAllZoom = () => {
+    pages.forEach(page => {
+      const state = zoomStates.get(page);
+      if (state?.zoom > 1.02) resetPage(page);
+    });
+  };
+
+  window.resetMenuZoom = resetAllZoom;
 
   const resetOtherPages = current => {
     pages.forEach(page => {
@@ -112,6 +164,7 @@ function initMenuPinchZoom() {
     }
 
     ensureFullRes(state);
+    lockPageHeight(state);
     state.zoom = nextZoom;
     img.style.width = `${nextZoom * 100}%`;
     img.style.maxWidth = 'none';
@@ -129,7 +182,29 @@ function initMenuPinchZoom() {
     viewport.scrollLeft = Math.max(0, baseX * ratio - localX);
     viewport.scrollTop = Math.max(0, baseY * ratio - localY);
     syncNavBlock();
+    noteZoomActivity();
   };
+
+  const checkZoomedPageLeftView = () => {
+    if (!anyZoomed() || pinching) return;
+
+    zoomStates.forEach(state => {
+      if (state.zoom <= 1.02) return;
+      const rect = state.page.getBoundingClientRect();
+      const viewTop = 0;
+      const viewBottom = window.innerHeight;
+      const visibleTop = Math.max(rect.top, viewTop);
+      const visibleBottom = Math.min(rect.bottom, viewBottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+      const ratio = rect.height > 0 ? visibleHeight / rect.height : 0;
+
+      if (ratio < LEAVE_RATIO) resetPage(state.page);
+    });
+  };
+
+  window.addEventListener('scroll', () => {
+    requestAnimationFrame(checkZoomedPageLeftView);
+  }, { passive: true });
 
   pages.forEach(page => {
     const picture = page.querySelector('picture');
@@ -149,12 +224,15 @@ function initMenuPinchZoom() {
       fullSrc: img.getAttribute('src'),
       zoom: 1,
       pinchAnchor: null,
+      baseHeight: null,
       lastTap: 0,
       hadMultiTouch: false,
     };
     zoomStates.set(page, state);
 
     viewport.addEventListener('touchstart', event => {
+      if (state.zoom > 1.02 && event.touches.length === 1) noteZoomActivity();
+
       if (event.touches.length !== 2) return;
 
       resetOtherPages(page);
@@ -173,11 +251,14 @@ function initMenuPinchZoom() {
       };
 
       syncNavBlock();
+      noteZoomActivity();
       event.preventDefault();
       event.stopPropagation();
     }, { passive: false });
 
     viewport.addEventListener('touchmove', event => {
+      if (state.zoom > 1.02) noteZoomActivity();
+
       if (!pinching || event.touches.length < 2 || !state.pinchAnchor) return;
 
       event.preventDefault();
@@ -192,6 +273,10 @@ function initMenuPinchZoom() {
       applyZoomAt(state, nextZoom, center.x, center.y, state.pinchAnchor);
     }, { passive: false });
 
+    viewport.addEventListener('scroll', () => {
+      if (state.zoom > 1.02) noteZoomActivity();
+    }, { passive: true });
+
     viewport.addEventListener('touchend', event => {
       if (event.touches.length >= 2) return;
 
@@ -203,7 +288,7 @@ function initMenuPinchZoom() {
         if (state.hadMultiTouch) {
           state.hadMultiTouch = false;
           if (state.zoom <= 1.02) resetPage(page);
-          else syncNavBlock();
+          else noteZoomActivity();
           return;
         }
       }
@@ -241,7 +326,7 @@ function initMenuPinchZoom() {
       state.pinchAnchor = null;
       viewport.classList.remove('is-pinching');
       if (state.zoom <= 1.02) resetPage(page);
-      else syncNavBlock();
+      else noteZoomActivity();
     }, { passive: true });
   });
 }

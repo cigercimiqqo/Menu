@@ -106,9 +106,11 @@ body {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
   overscroll-behavior: contain;
-  max-height: calc(100dvh - var(--header-h) - var(--safe-top) - 16px);
 }
-.menu-page.is-zoomed { z-index: 5; }
+.menu-page.is-zoomed {
+  z-index: 5;
+  overflow: hidden;
+}
 .menu-page picture, .menu-page img { display: block; width: 100%; height: auto; }
 .menu-page img { user-select: none; -webkit-user-drag: none; image-rendering: auto; }
 
