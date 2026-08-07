@@ -1,91 +1,23 @@
-const REVIEW_PLACES = {
-  cigerci: {
-    placeId: 'ChIJn2IDMBo30xQRSGFn6C3WL7A',
-    gPageReview: 'https://g.page/r/CUhhZ-gt1i-wEBM/review',
-  },
-  corbaci: {
-    placeId: '',
-    gPageReview: '',
-  },
+/** Google İşletme Profili → Yorum iste linkleri */
+const GOOGLE_REVIEW_URLS = {
+  cigerci: 'https://g.page/r/CUhhZ-gt1i-wEBM/review',
+  corbaci: '',
 };
 
-function writeReviewUrls(placeId) {
-  const id = encodeURIComponent(placeId);
-  return {
-    mobile: `https://search.google.com/local/writereview/mobile?placeid=${id}`,
-    web: `https://search.google.com/local/writereview?placeid=${id}`,
-  };
-}
-
-function toGoogleMapsAppUrl(httpsUrl) {
-  return httpsUrl.replace(/^https:\/\//i, 'comgooglemapsurl://');
-}
-
-function openReview(key) {
-  const place = REVIEW_PLACES[key];
-  if (!place) return;
-
-  const { placeId, gPageReview } = place;
-  if (!placeId && !gPageReview) return;
-
-  const ua = navigator.userAgent || '';
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
-  const urls = placeId ? writeReviewUrls(placeId) : null;
-
-  if (isIOS) {
-    // Safari https:// açar — comgooglemapsurl:// Maps uygulamasına yönlendirir
-    const appTargets = [
-      urls?.mobile && toGoogleMapsAppUrl(urls.mobile),
-      gPageReview && toGoogleMapsAppUrl(gPageReview),
-      urls?.web && toGoogleMapsAppUrl(urls.web),
-      placeId && `comgooglemaps://?q=place_id:${encodeURIComponent(placeId)}`,
-    ].filter(Boolean);
-
-    window.location.assign(appTargets[0]);
-    return;
-  }
-
-  if (isAndroid) {
-    const web = urls?.web || gPageReview;
-    const mobile = urls?.mobile || gPageReview;
-    const fallback = encodeURIComponent(web);
-    const target = mobile.includes('search.google.com')
-      ? mobile
-      : `https://search.google.com/local/writereview/mobile?placeid=${encodeURIComponent(placeId)}`;
-
-    window.location.assign(
-      `intent://${target.replace(/^https:\/\//, '')}#Intent;scheme=https;package=com.google.android.apps.maps;S.browser_fallback_url=${fallback};end`,
-    );
-    return;
-  }
-
-  window.open(gPageReview || urls?.web, '_blank', 'noopener,noreferrer');
-}
-
-function initReviewCta() {
-  document.querySelectorAll('[data-review-link]').forEach(button => {
-    button.addEventListener('click', () => {
-      openReview(button.dataset.reviewLink);
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  Object.entries(GOOGLE_REVIEW_URLS).forEach(([key, url]) => {
+    if (!url) console.warn(`[google-review] ${key} için GOOGLE_REVIEW_URLS boş.`);
   });
 
-  const section = document.querySelector('.review-cta');
-  if (!section || !('IntersectionObserver' in window)) {
-    section?.classList.add('review-cta--visible');
-    return;
-  }
+  const section = document.querySelector('.google-review');
+  if (!section || !('IntersectionObserver' in window)) return;
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        section.classList.add('review-cta--visible');
-        observer.disconnect();
-      }
-    });
-  }, { threshold: 0.15 });
+  const reveal = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      section.classList.add('google-review--visible');
+      reveal.disconnect();
+    }
+  }, { threshold: 0.12 });
 
-  observer.observe(section);
-}
-
-document.addEventListener('DOMContentLoaded', initReviewCta);
+  reveal.observe(section);
+});
