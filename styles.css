@@ -100,6 +100,7 @@ body {
 .menu-grid { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 12px; width: min(100%, 1280px); margin: 0 auto; padding: 12px max(10px, var(--safe-right)) calc(28px + var(--safe-bottom)) max(10px, var(--safe-left)); }
 .menu-page { position: relative; scroll-margin-top: calc(var(--header-h) + var(--safe-top) + 12px); overflow: hidden; background: #0c0e0c; border: 1px solid var(--line-soft); border-radius: 8px; box-shadow: 0 16px 50px rgba(0,0,0,.28); content-visibility: auto; contain-intrinsic-size: auto 141.3vw; }
 .menu-page__zoom { overflow: hidden; touch-action: pan-y; overscroll-behavior: contain; }
+.menu-page__zoom.is-pinching { touch-action: none; }
 .menu-page__zoom.can-pan {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -110,6 +111,14 @@ body {
 .menu-page.is-zoomed { z-index: 5; }
 .menu-page picture, .menu-page img { display: block; width: 100%; height: auto; }
 .menu-page img { user-select: none; -webkit-user-drag: none; image-rendering: auto; }
+
+body.menu-scroll-lock {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
 
 footer { min-height: 230px; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 42px 20px calc(55px + var(--safe-bottom)); border-top: 1px solid var(--line-soft); background: linear-gradient(180deg, transparent, rgba(229,59,30,.035)); }
 footer img { width: 170px; height: auto; opacity: .82; }
