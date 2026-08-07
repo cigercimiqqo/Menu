@@ -6,9 +6,59 @@ const nav = document.querySelector('#categoryNav');
 const navLinks = [...nav.querySelectorAll('a')];
 const pages = [...document.querySelectorAll('.menu-page')];
 
-const hideSplash = () => splash?.classList.add('hidden');
-window.addEventListener('load', () => window.setTimeout(hideSplash, 420), { once: true });
-window.setTimeout(hideSplash, 2200);
+const SPLASH_MIN_MS = 480;
+const SPLASH_MAX_MS = 45000;
+
+function collectMenuAssetUrls() {
+  const urls = new Set(['assets/brand/miqqo-logo.png']);
+
+  document.querySelectorAll('.menu-page picture').forEach(picture => {
+    const img = picture.querySelector('img');
+    const source = picture.querySelector('source');
+    if (img?.getAttribute('src')) urls.add(img.getAttribute('src'));
+    if (source?.getAttribute('srcset')) urls.add(source.getAttribute('srcset'));
+  });
+
+  return [...urls];
+}
+
+function preloadImage(src) {
+  return new Promise(resolve => {
+    const image = new Image();
+    image.decoding = 'async';
+    const finish = () => resolve(src);
+    image.onload = finish;
+    image.onerror = finish;
+    image.src = src;
+  });
+}
+
+function wait(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+async function initSplash() {
+  document.body.classList.add('is-loading');
+
+  const urls = collectMenuAssetUrls();
+  const preloadAll = Promise.all(urls.map(preloadImage));
+
+  await Promise.race([
+    Promise.all([preloadAll, wait(SPLASH_MIN_MS)]),
+    wait(SPLASH_MAX_MS),
+  ]);
+
+  document.querySelectorAll('.menu-page img').forEach(img => {
+    img.loading = 'eager';
+    if (!img.complete) img.decode?.().catch(() => {});
+  });
+
+  splash?.classList.add('hidden');
+  splash?.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('is-loading');
+}
+
+initSplash();
 
 function onScroll() {
   const max = document.documentElement.scrollHeight - window.innerHeight;
