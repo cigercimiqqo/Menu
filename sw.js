@@ -1,4 +1,4 @@
-const CACHE = 'miqqo-menu-v12';
+const CACHE = 'miqqo-menu-v13';
 const CORE = ['./', './index.html', './styles.css', './app.js', './reviews.js', './assets/brand/miqqo-logo.png', './assets/brand/miqqo-icon-512.png', './assets/menu/menu-01-1200.webp'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));

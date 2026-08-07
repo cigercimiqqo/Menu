@@ -38,7 +38,10 @@ nav.addEventListener('click', event => {
   document.getElementById(link.dataset.page)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
+let blockNavSync = false;
+
 const observer = new IntersectionObserver(entries => {
+  if (blockNavSync) return;
   const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
   if (!visible) return;
   const currentPage = Number(visible.target.id.slice(-2));
@@ -50,21 +53,11 @@ const observer = new IntersectionObserver(entries => {
 
 pages.forEach(page => observer.observe(page));
 
-let scrollLockY = 0;
+let pinching = false;
 
-function lockPageScroll() {
-  if (document.body.classList.contains('menu-scroll-lock')) return;
-  scrollLockY = window.scrollY;
-  document.body.classList.add('menu-scroll-lock');
-  document.body.style.top = `-${scrollLockY}px`;
-}
-
-function unlockPageScroll() {
-  if (!document.body.classList.contains('menu-scroll-lock')) return;
-  document.body.classList.remove('menu-scroll-lock');
-  document.body.style.top = '';
-  window.scrollTo(0, scrollLockY);
-}
+document.addEventListener('touchmove', event => {
+  if (pinching && event.touches.length >= 2) event.preventDefault();
+}, { passive: false });
 
 function initMenuPinchZoom() {
   const MIN_ZOOM = 1;
@@ -77,17 +70,24 @@ function initMenuPinchZoom() {
     y: (touches[0].clientY + touches[1].clientY) / 2,
   });
 
+  const anyZoomed = () => [...zoomStates.values()].some(item => item.zoom > 1.02);
+
+  const syncNavBlock = () => {
+    blockNavSync = pinching || anyZoomed();
+  };
+
   const resetPage = page => {
     const state = zoomStates.get(page);
     if (!state) return;
     state.zoom = 1;
+    state.pinchAnchor = null;
     state.img.style.width = '';
     state.img.style.maxWidth = '';
     page.classList.remove('is-zoomed');
     state.viewport.classList.remove('can-pan', 'is-pinching');
     state.viewport.scrollLeft = 0;
     state.viewport.scrollTop = 0;
-    if (![...zoomStates.values()].some(item => item.zoom > 1.02)) unlockPageScroll();
+    syncNavBlock();
   };
 
   const resetOtherPages = current => {
@@ -103,7 +103,7 @@ function initMenuPinchZoom() {
     state.img.dataset.hiRes = '1';
   };
 
-  const setZoom = (state, nextZoom, focalX, focalY) => {
+  const applyZoomAt = (state, nextZoom, focalX, focalY, anchor) => {
     const { viewport, img, page } = state;
 
     if (nextZoom <= 1.02) {
@@ -111,26 +111,24 @@ function initMenuPinchZoom() {
       return;
     }
 
-    resetOtherPages(page);
     ensureFullRes(state);
-
-    const rect = viewport.getBoundingClientRect();
-    const localX = focalX - rect.left;
-    const localY = focalY - rect.top;
-    const contentX = viewport.scrollLeft + localX;
-    const contentY = viewport.scrollTop + localY;
-    const prevZoom = state.zoom;
-
     state.zoom = nextZoom;
     img.style.width = `${nextZoom * 100}%`;
     img.style.maxWidth = 'none';
     viewport.classList.add('can-pan');
     page.classList.add('is-zoomed');
-    lockPageScroll();
 
-    const ratio = prevZoom > 1.02 ? nextZoom / prevZoom : nextZoom;
-    viewport.scrollLeft = Math.max(0, contentX * ratio - localX);
-    viewport.scrollTop = Math.max(0, contentY * ratio - localY);
+    const rect = viewport.getBoundingClientRect();
+    const localX = focalX - rect.left;
+    const localY = focalY - rect.top;
+    const baseZoom = anchor?.startZoom ?? 1;
+    const baseX = anchor?.contentX ?? localX;
+    const baseY = anchor?.contentY ?? localY;
+    const ratio = nextZoom / baseZoom;
+
+    viewport.scrollLeft = Math.max(0, baseX * ratio - localX);
+    viewport.scrollTop = Math.max(0, baseY * ratio - localY);
+    syncNavBlock();
   };
 
   pages.forEach(page => {
@@ -150,67 +148,64 @@ function initMenuPinchZoom() {
       viewport,
       fullSrc: img.getAttribute('src'),
       zoom: 1,
-      pinching: false,
-      pinchStartDist: 0,
-      pinchStartZoom: 1,
+      pinchAnchor: null,
       lastTap: 0,
       hadMultiTouch: false,
-      raf: 0,
-      pending: null,
     };
     zoomStates.set(page, state);
 
-    const flushZoom = () => {
-      state.raf = 0;
-      if (!state.pending) return;
-      const { zoom, x, y } = state.pending;
-      state.pending = null;
-      setZoom(state, zoom, x, y);
-    };
-
-    const queueZoom = (nextZoom, focalX, focalY) => {
-      state.pending = { zoom: nextZoom, x: focalX, y: focalY };
-      if (!state.raf) state.raf = requestAnimationFrame(flushZoom);
-    };
-
     viewport.addEventListener('touchstart', event => {
-      if (event.touches.length === 2) {
-        state.hadMultiTouch = true;
-        state.pinching = true;
-        viewport.classList.add('is-pinching');
-        ensureFullRes(state);
-        state.pinchStartDist = dist(event.touches[0], event.touches[1]);
-        state.pinchStartZoom = state.zoom;
-        lockPageScroll();
-        event.preventDefault();
-        event.stopPropagation();
-      }
+      if (event.touches.length !== 2) return;
+
+      resetOtherPages(page);
+      state.hadMultiTouch = true;
+      pinching = true;
+      viewport.classList.add('is-pinching');
+      ensureFullRes(state);
+
+      const center = mid(event.touches);
+      const rect = viewport.getBoundingClientRect();
+      state.pinchAnchor = {
+        startZoom: state.zoom,
+        startDist: dist(event.touches[0], event.touches[1]),
+        contentX: viewport.scrollLeft + (center.x - rect.left),
+        contentY: viewport.scrollTop + (center.y - rect.top),
+      };
+
+      syncNavBlock();
+      event.preventDefault();
+      event.stopPropagation();
     }, { passive: false });
 
     viewport.addEventListener('touchmove', event => {
-      if (!state.pinching || event.touches.length < 2) return;
+      if (!pinching || event.touches.length < 2 || !state.pinchAnchor) return;
+
       event.preventDefault();
       event.stopPropagation();
 
       const center = mid(event.touches);
       const nextZoom = Math.min(
         MAX_ZOOM,
-        Math.max(MIN_ZOOM, state.pinchStartZoom * (dist(event.touches[0], event.touches[1]) / state.pinchStartDist))
+        Math.max(MIN_ZOOM, state.pinchAnchor.startZoom * (dist(event.touches[0], event.touches[1]) / state.pinchAnchor.startDist))
       );
-      queueZoom(nextZoom, center.x, center.y);
+
+      applyZoomAt(state, nextZoom, center.x, center.y, state.pinchAnchor);
     }, { passive: false });
 
     viewport.addEventListener('touchend', event => {
-      if (event.touches.length < 2) {
-        state.pinching = false;
-        viewport.classList.remove('is-pinching');
-      }
+      if (event.touches.length >= 2) return;
 
-      if (event.touches.length === 0 && state.hadMultiTouch) {
-        state.hadMultiTouch = false;
-        if (state.zoom <= 1.02) resetPage(page);
-        else if (state.zoom > 1.02) lockPageScroll();
-        return;
+      if (event.touches.length === 0) {
+        pinching = false;
+        viewport.classList.remove('is-pinching');
+        state.pinchAnchor = null;
+
+        if (state.hadMultiTouch) {
+          state.hadMultiTouch = false;
+          if (state.zoom <= 1.02) resetPage(page);
+          else syncNavBlock();
+          return;
+        }
       }
 
       const now = Date.now();
@@ -221,8 +216,18 @@ function initMenuPinchZoom() {
         && !state.hadMultiTouch
       ) {
         const touch = event.changedTouches[0];
-        if (state.zoom > 1.02) resetPage(page);
-        else setZoom(state, 2.5, touch.clientX, touch.clientY);
+        if (state.zoom > 1.02) {
+          resetPage(page);
+        } else {
+          resetOtherPages(page);
+          const rect = viewport.getBoundingClientRect();
+          const anchor = {
+            startZoom: 1,
+            contentX: touch.clientX - rect.left,
+            contentY: touch.clientY - rect.top,
+          };
+          applyZoomAt(state, 2.5, touch.clientX, touch.clientY, anchor);
+        }
         state.lastTap = 0;
         event.preventDefault();
         return;
@@ -231,10 +236,12 @@ function initMenuPinchZoom() {
     }, { passive: false });
 
     viewport.addEventListener('touchcancel', () => {
-      state.pinching = false;
+      pinching = false;
       state.hadMultiTouch = false;
+      state.pinchAnchor = null;
       viewport.classList.remove('is-pinching');
       if (state.zoom <= 1.02) resetPage(page);
+      else syncNavBlock();
     }, { passive: true });
   });
 }

@@ -112,14 +112,6 @@ body {
 .menu-page picture, .menu-page img { display: block; width: 100%; height: auto; }
 .menu-page img { user-select: none; -webkit-user-drag: none; image-rendering: auto; }
 
-body.menu-scroll-lock {
-  position: fixed;
-  width: 100%;
-  left: 0;
-  right: 0;
-  overflow: hidden;
-}
-
 footer { min-height: 230px; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 42px 20px calc(55px + var(--safe-bottom)); border-top: 1px solid var(--line-soft); background: linear-gradient(180deg, transparent, rgba(229,59,30,.035)); }
 footer img { width: 170px; height: auto; opacity: .82; }
 footer p { margin: 0; color: #8c8983; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif; font-size: 16px; letter-spacing: .06em; }
