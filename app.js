@@ -51,128 +51,94 @@ const observer = new IntersectionObserver(entries => {
 pages.forEach(page => observer.observe(page));
 
 function initMenuPinchZoom() {
-  const MIN_SCALE = 1;
-  const MAX_SCALE = 4;
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 5;
 
   pages.forEach(page => {
     const picture = page.querySelector('picture');
-    if (!picture) return;
+    const img = picture?.querySelector('img');
+    if (!picture || !img) return;
 
     const viewport = document.createElement('div');
     viewport.className = 'menu-page__zoom';
-    const stage = document.createElement('div');
-    stage.className = 'menu-page__stage';
     page.insertBefore(viewport, picture);
-    viewport.appendChild(stage);
-    stage.appendChild(picture);
+    viewport.appendChild(picture);
 
-    let scale = 1;
-    let pointX = 0;
-    let pointY = 0;
+    const fullSrc = img.getAttribute('src');
+    let zoom = 1;
     let pinching = false;
-    let panning = false;
     let pinchStartDist = 0;
-    let pinchStartScale = 1;
-    let panStartX = 0;
-    let panStartY = 0;
-    let panOriginX = 0;
-    let panOriginY = 0;
+    let pinchStartZoom = 1;
     let lastTap = 0;
     let hadMultiTouch = false;
 
-    const setTransform = () => {
-      stage.style.transform = `translate3d(${pointX}px, ${pointY}px, 0) scale(${scale})`;
-      page.classList.toggle('is-zoomed', scale > 1.02);
+    const ensureFullRes = () => {
+      if (img.dataset.hiRes === '1') return;
+      picture.querySelector('source')?.remove();
+      if (fullSrc) img.src = fullSrc;
+      img.dataset.hiRes = '1';
     };
 
-    const resetZoom = () => {
-      scale = 1;
-      pointX = 0;
-      pointY = 0;
-      setTransform();
+    const applyZoom = () => {
+      if (zoom <= 1.02) {
+        zoom = 1;
+        img.style.width = '';
+        img.style.maxWidth = '';
+        page.classList.remove('is-zoomed');
+        viewport.classList.remove('can-pan');
+        return;
+      }
+
+      ensureFullRes();
+      img.style.width = `${zoom * 100}%`;
+      img.style.maxWidth = 'none';
+      page.classList.add('is-zoomed');
+      viewport.classList.add('can-pan');
     };
 
     const dist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
-
-    const clampPosition = () => {
-      const bounds = viewport.getBoundingClientRect();
-      const stageHeight = stage.offsetHeight;
-      const scaledWidth = bounds.width * scale;
-      const scaledHeight = stageHeight * scale;
-      const maxX = Math.max(0, (scaledWidth - bounds.width) / 2);
-      const maxY = Math.max(0, (scaledHeight - bounds.height) / 2);
-      pointX = Math.min(maxX, Math.max(-maxX, pointX));
-      pointY = Math.min(maxY, Math.max(-maxY, pointY));
-    };
 
     viewport.addEventListener('touchstart', event => {
       if (event.touches.length === 2) {
         hadMultiTouch = true;
         pinching = true;
-        panning = false;
+        ensureFullRes();
         pinchStartDist = dist(event.touches[0], event.touches[1]);
-        pinchStartScale = scale;
+        pinchStartZoom = zoom;
         event.preventDefault();
         return;
-      }
-
-      if (event.touches.length === 1 && scale > 1.02) {
-        panning = true;
-        panStartX = event.touches[0].clientX;
-        panStartY = event.touches[0].clientY;
-        panOriginX = pointX;
-        panOriginY = pointY;
       }
     }, { passive: false });
 
     viewport.addEventListener('touchmove', event => {
       if (pinching && event.touches.length >= 2) {
         event.preventDefault();
-        const nextScale = pinchStartScale * (dist(event.touches[0], event.touches[1]) / pinchStartDist);
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
-        if (scale <= 1.02) {
-          resetZoom();
-          return;
-        }
-        clampPosition();
-        setTransform();
-        return;
-      }
-
-      if (panning && event.touches.length === 1 && scale > 1.02) {
-        event.preventDefault();
-        pointX = panOriginX + (event.touches[0].clientX - panStartX);
-        pointY = panOriginY + (event.touches[0].clientY - panStartY);
-        clampPosition();
-        setTransform();
+        zoom = Math.min(
+          MAX_ZOOM,
+          Math.max(MIN_ZOOM, pinchStartZoom * (dist(event.touches[0], event.touches[1]) / pinchStartDist))
+        );
+        applyZoom();
       }
     }, { passive: false });
 
     viewport.addEventListener('touchend', event => {
       if (event.touches.length < 2) pinching = false;
-      if (event.touches.length === 0) {
-        panning = false;
-        if (hadMultiTouch) {
-          hadMultiTouch = false;
-          if (scale < 1.05) resetZoom();
-          return;
-        }
+
+      if (event.touches.length === 0 && hadMultiTouch) {
+        hadMultiTouch = false;
+        applyZoom();
+        return;
       }
-      if (scale < 1.05) resetZoom();
 
       const now = Date.now();
       if (
         event.changedTouches.length === 1
         && event.touches.length === 0
-        && now - lastTap < 280
+        && now - lastTap < 300
         && !hadMultiTouch
       ) {
-        if (scale > 1.02) resetZoom();
-        else {
-          scale = 2.5;
-          clampPosition();
-          setTransform();
-        }
+        zoom = zoom > 1.02 ? 1 : 2.5;
+        applyZoom();
         lastTap = 0;
         return;
       }
@@ -181,8 +147,7 @@ function initMenuPinchZoom() {
 
     viewport.addEventListener('touchcancel', () => {
       pinching = false;
-      panning = false;
-      if (scale < 1.05) resetZoom();
+      hadMultiTouch = false;
     }, { passive: true });
   });
 }
