@@ -1,0 +1,10 @@
+{
+  "name": "Ciğerci Miqqo Menü",
+  "short_name": "Miqqo Menü",
+  "description": "Ciğerci Miqqo dijital menü",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080908",
+  "theme_color": "#080908",
+  "icons": [{ "src": "assets/brand/miqqo-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}

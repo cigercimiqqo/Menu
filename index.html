@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#090a09" />
+  <meta name="description" content="Ciğerci Miqqo dijital menü" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Ciğerci Miqqo | Menü</title>
+  <link rel="icon" type="image/png" href="assets/brand/miqqo-icon-512.png" />
+  <link rel="apple-touch-icon" href="assets/brand/miqqo-icon-512.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preload" as="image" href="assets/menu/menu-01-1200.webp" fetchpriority="high" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="splash" id="splash" aria-hidden="true">
+    <img src="assets/brand/miqqo-logo.png" alt="" />
+    <div class="splash-line"><span></span></div>
+  </div>
+
+  <div class="scroll-progress" aria-hidden="true"><span id="scrollProgress"></span></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#menu-01" aria-label="Menünün başına dön">
+        <img src="assets/brand/miqqo-logo.png" alt="Ciğerci Miqqo" />
+      </a>
+      <div class="header-copy">
+        <strong>Menü</strong>
+        <span>Lezzeti keşfet</span>
+      </div>
+      <button class="top-button" id="topButton" type="button" aria-label="Sayfanın başına dön">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+    </div>
+
+    <nav class="category-nav" id="categoryNav" aria-label="Menü kategorileri">
+      <a class="active" href="#menu-01" data-page="menu-01">Çorbalar</a>
+      <a href="#menu-05" data-page="menu-05">Kebaplar</a>
+      <a href="#menu-02" data-page="menu-02">Dürümler</a>
+      <a href="#menu-06" data-page="menu-06">Pideler</a>
+      <a href="#menu-08" data-page="menu-08">Tavalar</a>
+      <a href="#menu-10" data-page="menu-10">Tatlı & İçecek</a>
+    </nav>
+  </header>
+
+  <main id="main" class="menu-grid">
+    <article class="menu-page" id="menu-01" data-title="Çorbalar ve Ara Sıcaklar">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-01-1200.webp"><img src="assets/menu/menu-01.webp" alt="Çorbalar ve ara sıcaklar menüsü" width="2418" height="3417" fetchpriority="high" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-05" data-title="Kebaplar">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-05-1200.webp"><img src="assets/menu/menu-05.webp" alt="Kebaplar menüsü birinci sayfa" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-02" data-title="Dürümler">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-02-1200.webp"><img src="assets/menu/menu-02.webp" alt="Dürümler menüsü ikinci sayfa" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-06" data-title="Pideler">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-06-1200.webp"><img src="assets/menu/menu-06.webp" alt="Pideler menüsü birinci sayfa" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-07" data-title="Pideler">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-07-1200.webp"><img src="assets/menu/menu-07.webp" alt="Pideler menüsü ikinci sayfa" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-08" data-title="Tavalar">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-08-1200.webp"><img src="assets/menu/menu-08.webp" alt="Tavalar menüsü" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-09" data-title="Miqqo Tava ve Avantajlı Kiloluk">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-09-1200.webp"><img src="assets/menu/menu-09.webp" alt="Miqqo tava ve avantajlı kiloluk menüsü" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+    <article class="menu-page" id="menu-10" data-title="Tatlı ve İçecekler">
+      <picture><source media="(max-width: 760px)" srcset="assets/menu/menu-10-1200.webp"><img src="assets/menu/menu-10.webp" alt="Tatlılar ve içecekler menüsü" width="2418" height="3417" loading="lazy" decoding="async"></picture>
+    </article>
+  </main>
+
+  <footer>
+    <img src="assets/brand/miqqo-logo.png" alt="Ciğerci Miqqo" />
+    <p>Afiyet olsun.</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
