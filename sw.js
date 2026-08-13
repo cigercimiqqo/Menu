@@ -1,8 +1,10 @@
-const CACHE = 'miqqo-menu-v15';
+const CACHE = 'miqqo-menu-v18';
 const CORE = ['./', './index.html', './styles.css', './app.js', './reviews.js', './assets/brand/miqqo-logo.png', './assets/brand/miqqo-icon-512.png'];
 const MENU_ASSETS = [
   './assets/menu/menu-01.webp', './assets/menu/menu-01-1200.webp',
   './assets/menu/menu-02.webp', './assets/menu/menu-02-1200.webp',
+  './assets/menu/menu-03.webp', './assets/menu/menu-03-1200.webp',
+  './assets/menu/menu-04.webp', './assets/menu/menu-04-1200.webp',
   './assets/menu/menu-05.webp', './assets/menu/menu-05-1200.webp',
   './assets/menu/menu-06.webp', './assets/menu/menu-06-1200.webp',
   './assets/menu/menu-07.webp', './assets/menu/menu-07-1200.webp',

@@ -6,6 +6,9 @@
   --line-soft: rgba(255, 255, 255, .10);
   --text: #f4f0e8;
   --red: #e53b1e;
+  --brass: #b8a078;
+  --surface-raised: #0e0f0d;
+  --bordo: #5c2824;
   --header-h: 132px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -99,8 +102,8 @@ body {
 .category-nav a.active { color: var(--text); border-color: rgba(229,59,30,.75); background: linear-gradient(180deg, rgba(229,59,30,.3), rgba(229,59,30,.14)); box-shadow: inset 0 0 0 1px rgba(255,106,77,.08), 0 6px 20px rgba(229,59,30,.12); }
 
 .menu-grid { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 12px; width: min(100%, 1280px); margin: 0 auto; padding: 12px max(10px, var(--safe-right)) calc(28px + var(--safe-bottom)) max(10px, var(--safe-left)); }
-.menu-page { position: relative; scroll-margin-top: calc(var(--header-h) + var(--safe-top) + 12px); overflow: hidden; background: #0c0e0c; border: 1px solid var(--line-soft); border-radius: 8px; box-shadow: 0 16px 50px rgba(0,0,0,.28); content-visibility: auto; contain-intrinsic-size: auto 141.3vw; }
-.menu-page__zoom { overflow: hidden; touch-action: pan-y; overscroll-behavior: contain; }
+.menu-page { position: relative; scroll-margin-top: calc(var(--header-h) + var(--safe-top) + 12px); overflow: hidden; background: #0c0e0c; border: 1px solid var(--line-soft); border-radius: 8px; box-shadow: 0 16px 50px rgba(0,0,0,.28); }
+.menu-page__zoom { overflow: hidden; touch-action: auto; }
 .menu-page__zoom.is-pinching { touch-action: none; }
 .menu-page__zoom.can-pan {
   overflow: auto;
@@ -119,149 +122,245 @@ footer { min-height: 230px; display: grid; place-content: center; justify-items:
 footer img { width: 170px; height: auto; opacity: .82; }
 footer p { margin: 0; color: #8c8983; font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif; font-size: 16px; letter-spacing: .06em; }
 
-.google-review {
+.miqqo-review {
   scroll-margin-top: calc(var(--header-h) + var(--safe-top) + 12px);
-  padding: 36px max(16px, var(--safe-right)) calc(32px + var(--safe-bottom)) max(16px, var(--safe-left));
-  border-top: 1px solid var(--line-soft);
-  background: linear-gradient(180deg, rgba(229,59,30,.035), transparent 70%);
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity .22s ease, transform .22s ease;
-}
-.google-review--visible { opacity: 1; transform: none; }
-
-.google-review__panel {
-  width: min(100%, 680px);
-  margin: 0 auto;
-  padding: 28px 18px 22px;
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
+  padding: 28px max(16px, var(--safe-right)) calc(28px + var(--safe-bottom)) max(16px, var(--safe-left));
+  border-top: 1px solid rgba(184, 160, 120, .12);
   background:
-    linear-gradient(165deg, rgba(255,255,255,.025), rgba(255,255,255,.008)),
-    #0c0e0c;
-  box-shadow: 0 16px 50px rgba(0,0,0,.24);
-  text-align: center;
+    linear-gradient(125deg, transparent 49.6%, rgba(255,255,255,.014) 50%, transparent 50.4%) 0 0/22px 22px,
+    linear-gradient(235deg, transparent 49.6%, rgba(255,255,255,.01) 50%, transparent 50.4%) 0 0/22px 22px,
+    linear-gradient(180deg, rgba(92, 40, 36, .07), transparent 55%),
+    var(--bg);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .2s ease, transform .2s ease;
 }
+.miqqo-review--visible { opacity: 1; transform: none; }
 
-.google-review__stars {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-bottom: 18px;
-}
-.google-review__stars svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--text);
-  opacity: .72;
-}
-
-.google-review__title {
-  margin: 0 0 12px;
-  color: var(--text);
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(1.35rem, 4vw, 1.65rem);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: .02em;
-}
-
-.google-review__desc {
-  max-width: 26rem;
+.miqqo-review__frame {
+  width: min(100%, 920px);
   margin: 0 auto;
-  color: #a9a69f;
-  font-size: 14px;
-  line-height: 1.65;
+  padding: 32px 24px 24px;
+  background: var(--surface-raised);
+  border: 1px solid rgba(184, 160, 120, .14);
 }
 
-.google-review__actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 24px;
-}
-
-.google-review__btn {
+.miqqo-review__rule {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255,255,255,.035);
-  color: var(--text);
-  font-family: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  transition: border-color .22s ease, background .22s ease, box-shadow .22s ease, transform .22s ease;
-  -webkit-tap-highlight-color: transparent;
+  gap: 14px;
+  margin-bottom: 24px;
 }
-.google-review__btn:hover {
-  border-color: rgba(255,255,255,.28);
-  background: rgba(255,255,255,.055);
-  box-shadow: 0 6px 24px rgba(0,0,0,.18);
-  transform: translateY(-1px);
+.miqqo-review__rule > span:first-child,
+.miqqo-review__rule > span:last-child {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(184, 160, 120, .32), transparent);
 }
-.google-review__btn:active { transform: translateY(0); }
-.google-review__btn:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
-}
-.google-review__btn--soon {
-  opacity: .38;
-  pointer-events: none;
-  cursor: default;
+.miqqo-review__diamond {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--brass);
+  opacity: .5;
+  transform: rotate(45deg);
 }
 
-.google-review__g {
-  width: 18px;
-  height: 18px;
+.miqqo-review__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.miqqo-review__copy { min-width: 0; }
+
+.miqqo-review__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--brass);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.miqqo-review__eyebrow-star {
+  width: 11px;
+  height: 11px;
+  fill: var(--brass);
+  opacity: .72;
   flex: none;
 }
 
-.google-review__btn-text {
+.miqqo-review__title {
+  margin: 0 0 12px;
+  max-width: 16em;
+  color: var(--text);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.45rem, 4.2vw, 2rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: .01em;
+}
+
+.miqqo-review__lead {
+  margin: 0;
+  max-width: 28em;
+  color: #a9a69f;
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.miqqo-review__choices {
   display: grid;
-  gap: 2px;
+  gap: 11px;
+  min-width: 0;
+}
+
+.miqqo-review__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .02);
+  color: inherit;
+  text-decoration: none;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.miqqo-review__row:hover {
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(184, 160, 120, .28);
+}
+.miqqo-review__row:active { transform: scale(.992); }
+.miqqo-review__row:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+.miqqo-review__mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(184, 160, 120, .22);
+  background: rgba(92, 40, 36, .14);
+  color: var(--brass);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  flex: none;
+}
+
+.miqqo-review__info {
+  display: grid;
+  gap: 3px;
   min-width: 0;
   text-align: left;
 }
-.google-review__biz {
-  color: #8c8983;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-.google-review__cta {
+.miqqo-review__name {
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: .01em;
   line-height: 1.25;
 }
+.miqqo-review__sub {
+  color: #949087;
+  font-size: 12px;
+  line-height: 1.35;
+}
 
-.google-review__trust {
-  margin: 16px 0 0;
+.miqqo-review__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: #c8c2b8;
+}
+.miqqo-review__go-text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.miqqo-review__g {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.miqqo-review__arrow {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--brass);
+  transition: transform .2s ease;
+}
+.miqqo-review__row:hover .miqqo-review__arrow { transform: translateX(4px); }
+
+.miqqo-review__trust {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 20px 0 0;
   color: #6f6c66;
   font-size: 11px;
   letter-spacing: .02em;
-  line-height: 1.45;
+  line-height: 1.4;
+}
+.miqqo-review__trust svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .85;
 }
 
-@media (min-width: 720px) {
-  .google-review { padding: 44px 24px calc(40px + var(--safe-bottom)); }
-  .google-review__panel { padding: 32px 28px 26px; }
-  .google-review__actions { gap: 12px; }
-  .google-review__btn { padding: 14px 18px; }
-  .google-review__cta { font-size: 13px; }
+@media (min-width: 768px) {
+  .miqqo-review {
+    padding: 36px max(24px, var(--safe-right)) calc(36px + var(--safe-bottom)) max(24px, var(--safe-left));
+  }
+  .miqqo-review__frame {
+    padding: 40px 48px 28px;
+  }
+  .miqqo-review__layout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: 40px 48px;
+  }
+  .miqqo-review__row {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 430px) {
+  .miqqo-review__row {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px 12px;
+    padding: 14px 12px;
+  }
+  .miqqo-review__go {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding-top: 2px;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .google-review { opacity: 1; transform: none; transition: none; }
+  .miqqo-review { opacity: 1; transform: none; transition: none; }
+  .miqqo-review__row,
+  .miqqo-review__arrow { transition: none; }
 }
 
 @media (max-width: 380px) {
@@ -277,9 +376,9 @@ footer p { margin: 0; color: #8c8983; font-family: "Cormorant Garamond", Georgia
   .header-review { padding: 9px 14px; font-size: 12px; }
   .category-nav { padding-inline: 24px; justify-content: center; }
   .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; padding: 26px 24px 50px; }
-  .menu-page { border-radius: 10px; scroll-margin-top: calc(var(--header-h) + 20px); contain-intrinsic-size: auto 850px; }
+  .menu-page { border-radius: 10px; scroll-margin-top: calc(var(--header-h) + 20px); }
 }
 
 @media (min-width: 1400px) { .menu-grid { width: 1360px; max-width: calc(100% - 64px); } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-@media print { .splash, .site-header, .scroll-progress, .google-review, footer { display: none !important; } .menu-grid { display: block; padding: 0; } .menu-page { break-after: page; border: 0; box-shadow: none; } }
+@media print { .splash, .site-header, .scroll-progress, .miqqo-review, footer { display: none !important; } .menu-grid { display: block; padding: 0; } .menu-page { break-after: page; border: 0; box-shadow: none; } }

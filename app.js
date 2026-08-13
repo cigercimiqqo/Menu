@@ -96,19 +96,14 @@ const observer = new IntersectionObserver(entries => {
   const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
   if (!visible) return;
   const currentPage = Number(visible.target.id.slice(-2));
-  const targetPage = currentPage === 7 ? 'menu-06' : currentPage === 9 ? 'menu-08' : visible.target.id;
+  const navGroup = { 3: 'menu-02', 5: 'menu-04', 7: 'menu-06', 9: 'menu-08' };
+  const targetPage = navGroup[currentPage] || visible.target.id;
   navLinks.forEach(link => link.classList.toggle('active', link.dataset.page === targetPage));
   const active = nav.querySelector('.active');
   active?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }, { rootMargin: '-25% 0px -55% 0px', threshold: [0, .1, .25, .5] });
 
 pages.forEach(page => observer.observe(page));
-
-let pinching = false;
-
-document.addEventListener('touchmove', event => {
-  if (pinching && event.touches.length >= 2) event.preventDefault();
-}, { passive: false });
 
 function initMenuPinchZoom() {
   const MIN_ZOOM = 1;
@@ -117,6 +112,7 @@ function initMenuPinchZoom() {
   const LEAVE_RATIO = 0.38;
   const zoomStates = new Map();
   let idleResetTimer = null;
+  let pinching = false;
 
   const dist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
   const mid = touches => ({
@@ -364,11 +360,10 @@ function initMenuPinchZoom() {
           applyZoomAt(state, 2.5, touch.clientX, touch.clientY, anchor);
         }
         state.lastTap = 0;
-        event.preventDefault();
         return;
       }
       state.lastTap = now;
-    }, { passive: false });
+    }, { passive: true });
 
     viewport.addEventListener('touchcancel', () => {
       pinching = false;
