@@ -1,4 +1,4 @@
-const CACHE = 'miqqo-menu-v16';
+const CACHE = 'miqqo-menu-v15';
 const CORE = ['./', './index.html', './styles.css', './app.js', './reviews.js', './assets/brand/miqqo-logo.png', './assets/brand/miqqo-icon-512.png'];
 const MENU_ASSETS = [
   './assets/menu/menu-01.webp', './assets/menu/menu-01-1200.webp',
